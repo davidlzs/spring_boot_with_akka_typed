@@ -1,6 +1,7 @@
 package com.dliu.springbootwithakkatyped;
 
 import com.dliu.springbootwithakkatyped.actors.Counter;
+import com.dliu.springbootwithakkatyped.actors.WeatherStation;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -48,6 +49,7 @@ public class ServiceConfig {
                     akka.actor.ActorSystem unTypedSystem = Adapter.toClassic(ctx.getSystem());
                     AkkaManagement.get(unTypedSystem).start();
                     ClusterBootstrap.get(unTypedSystem).start();
+                    WeatherStation.initSharding(ctx.getSystem());
                     return SpawnProtocol.create();
                 }), config.getString("counter.cluster.name"));
     }

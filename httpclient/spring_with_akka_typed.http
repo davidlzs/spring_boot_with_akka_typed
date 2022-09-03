@@ -1,10 +1,29 @@
 @counterid = counter-2
+@wsid = 12345
 
-### incremental
+###
+# incremental
 POST http://localhost:8080/counter/{{counterid}} HTTP/1.1
 Content-Type: application/x-www-form-urlencoded
 
-
-
-### get value
+### 
+# get value
 GET http://localhost:8080/counter/{{counterid}} HTTP/1.1
+
+
+###
+# record
+POST http://localhost:8080/weather/{{wsid}} HTTP/1.1
+Content-Type: application/json
+
+{
+    "eventTime": 1579106781, 
+    "dataType": "temperature", 
+    "value": 10.6
+}
+
+
+###
+# query
+GET http://localhost:8080/weather/{{wsid}}?type=Temperature&function=Average HTTP/1.1
+
