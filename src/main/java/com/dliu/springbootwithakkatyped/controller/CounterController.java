@@ -1,4 +1,6 @@
-package com.dliu.springbootwithakkatyped;
+package com.dliu.springbootwithakkatyped.controller;
+
+import com.dliu.springbootwithakkatyped.service.CounterService;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

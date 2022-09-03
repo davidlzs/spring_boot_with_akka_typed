@@ -1,4 +1,4 @@
-package com.dliu.springbootwithakkatyped;
+package com.dliu.springbootwithakkatyped.service;
 
 import com.dliu.springbootwithakkatyped.actors.Counter;
 
