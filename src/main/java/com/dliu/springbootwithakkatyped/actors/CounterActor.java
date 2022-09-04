@@ -7,7 +7,7 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 
-public class Counter extends AbstractBehavior<Counter.Command> {
+public class CounterActor extends AbstractBehavior<CounterActor.Command> {
 
     public interface Command {}
 
@@ -24,13 +24,13 @@ public class Counter extends AbstractBehavior<Counter.Command> {
     }
 
     public static Behavior<Command> create(String entityId) {
-        return Behaviors.setup(context -> new Counter(context, entityId));
+        return Behaviors.setup(context -> new CounterActor(context, entityId));
     }
 
     private final String entityId;
     private int value = 0;
 
-    private Counter(ActorContext<Command> context, String entityId) {
+    private CounterActor(ActorContext<Command> context, String entityId) {
         super(context);
         this.entityId = entityId;
     }
@@ -45,12 +45,12 @@ public class Counter extends AbstractBehavior<Counter.Command> {
 
     private Behavior<Command> onIncrement() {
         value++;
-        getContext().getLog().info("Counter [{}], incremented value to: {}", entityId, value);
+        getContext().getLog().info("CounterActor [{}], incremented value to: {}", entityId, value);
         return this;
     }
 
     private Behavior<Command> onGetValue(GetValue msg) {
-        getContext().getLog().info("Counter [{}], get value: {}", entityId, value);
+        getContext().getLog().info("CounterActor [{}], get value: {}", entityId, value);
         msg.replyTo.tell(value);
         return this;
     }

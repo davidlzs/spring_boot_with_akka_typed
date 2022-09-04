@@ -1,7 +1,7 @@
 package com.dliu.springbootwithakkatyped.config;
 
 import com.dliu.springbootwithakkatyped.ActorServiceCtx;
-import com.dliu.springbootwithakkatyped.actors.Counter;
+import com.dliu.springbootwithakkatyped.actors.CounterActor;
 import com.dliu.springbootwithakkatyped.actors.WeatherStationActor;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -68,10 +68,10 @@ public class ServiceConfig {
     }
 
     @Bean
-    public ActorRef<ShardingEnvelope<Counter.Command>> counterShardRegion() {
+    public ActorRef<ShardingEnvelope<CounterActor.Command>> counterShardRegion() {
         ClusterShardingSettings settings = ClusterShardingSettings
                 .create(system().classicSystem());
-        EntityTypeKey<Counter.Command> typeKey = EntityTypeKey.create(Counter.Command.class, "Counter");
-        return clusterSharding().init(Entity.of(typeKey, ctx -> Counter.create(ctx.getEntityId())));
+        EntityTypeKey<CounterActor.Command> typeKey = EntityTypeKey.create(CounterActor.Command.class, "CounterActor");
+        return clusterSharding().init(Entity.of(typeKey, ctx -> CounterActor.create(ctx.getEntityId())));
     }
 }

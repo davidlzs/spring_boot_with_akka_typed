@@ -1,6 +1,6 @@
 package com.dliu.springbootwithakkatyped.service;
 
-import com.dliu.springbootwithakkatyped.actors.Counter;
+import com.dliu.springbootwithakkatyped.actors.CounterActor;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,12 +18,12 @@ import reactor.core.publisher.Mono;
 public class CounterService {
 
     public static final Duration TIMEOUT = Duration.ofSeconds(10);
-    private final ActorRef<ShardingEnvelope<Counter.Command>> counterShardRegion;
+    private final ActorRef<ShardingEnvelope<CounterActor.Command>> counterShardRegion;
     private final Scheduler scheduler;
 
     @Autowired
     public CounterService(
-            ActorRef<ShardingEnvelope<Counter.Command>> counterShardRegion,
+            ActorRef<ShardingEnvelope<CounterActor.Command>> counterShardRegion,
             Scheduler scheduler
     ) {
         this.counterShardRegion = counterShardRegion;
@@ -31,12 +31,12 @@ public class CounterService {
     }
 
     public void getValue(String id){
-        counterShardRegion.tell(new ShardingEnvelope<>(id, Counter.Increment.INSTANCE));
+        counterShardRegion.tell(new ShardingEnvelope<>(id, CounterActor.Increment.INSTANCE));
     }
     public Mono<Integer> incrementByOne(String id){
         CompletionStage<Integer> willBeResponse = AskPattern.ask(
                 counterShardRegion,
-                (ActorRef<Integer> replyTo) -> new ShardingEnvelope<>(id, new Counter.GetValue(replyTo)),
+                (ActorRef<Integer> replyTo) -> new ShardingEnvelope<>(id, new CounterActor.GetValue(replyTo)),
                 TIMEOUT,
                 scheduler
         );

@@ -45,7 +45,7 @@ public class WeatherStationService {
     public Mono<WeatherStationActor.DataRecorded> recordData(Long wsid, WeatherStationActor.Data data){
         /*CompletionStage<Integer> willBeResponse = AskPattern.ask(
                 counterShardRegion,
-                (ActorRef<Integer> replyTo) -> new ShardingEnvelope<>(id, new Counter.GetValue(replyTo)),
+                (ActorRef<Integer> replyTo) -> new ShardingEnvelope<>(id, new CounterActor.GetValue(replyTo)),
                 TIMEOUT,
                 scheduler
         );*/
