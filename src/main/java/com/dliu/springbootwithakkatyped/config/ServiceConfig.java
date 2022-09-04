@@ -1,4 +1,4 @@
-package com.dliu.springbootwithakkatyped;
+package com.dliu.springbootwithakkatyped.config;
 
 import com.dliu.springbootwithakkatyped.actors.Counter;
 import com.dliu.springbootwithakkatyped.actors.WeatherStation;
