@@ -102,6 +102,12 @@
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>me.yaman.can</groupId>
+			<artifactId>spring-boot-webflux-h2-console</artifactId>
+			<version>0.0.1</version>
+			<optional>true</optional>
+		</dependency>
 
 		<dependency>
 			<groupId>org.projectlombok</groupId>
