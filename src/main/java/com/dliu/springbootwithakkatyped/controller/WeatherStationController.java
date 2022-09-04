@@ -1,6 +1,6 @@
 package com.dliu.springbootwithakkatyped.controller;
 
-import com.dliu.springbootwithakkatyped.actors.WeatherStation;
+import com.dliu.springbootwithakkatyped.actors.WeatherStationActor;
 import com.dliu.springbootwithakkatyped.service.WeatherStationService;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,16 +24,16 @@ public class WeatherStationController {
     }
 
     @GetMapping("/{wsid}")
-    private Mono<WeatherStation.QueryResult> query(@PathVariable Long wsid,
-                                                   @RequestParam WeatherStation.DataType type,
-                                                   @RequestParam WeatherStation.Function function) {
+    private Mono<WeatherStationActor.QueryResult> query(@PathVariable Long wsid,
+                                                        @RequestParam WeatherStationActor.DataType type,
+                                                        @RequestParam WeatherStationActor.Function function) {
         System.out.println("query data type: " + type +  " function: " + function);
         return weatherStationService.query(wsid, type, function);
     }
 
     @PostMapping("/{wsid}")
-    private Mono<WeatherStation.DataRecorded> record(@PathVariable Long wsid,
-                                                     @RequestBody WeatherStation.Data data ) {
+    private Mono<WeatherStationActor.DataRecorded> record(@PathVariable Long wsid,
+                                                          @RequestBody WeatherStationActor.Data data ) {
         return weatherStationService.recordData(wsid, data);
     }
 }

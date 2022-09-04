@@ -1,7 +1,8 @@
 package com.dliu.springbootwithakkatyped.config;
 
+import com.dliu.springbootwithakkatyped.ActorServiceCtx;
 import com.dliu.springbootwithakkatyped.actors.Counter;
-import com.dliu.springbootwithakkatyped.actors.WeatherStation;
+import com.dliu.springbootwithakkatyped.actors.WeatherStationActor;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -41,6 +42,11 @@ public class ServiceConfig {
         return ConfigFactory.load();
     }
 
+    @Bean
+    public ActorServiceCtx actorServiceCtx() {
+        return new ActorServiceCtx();
+    }
+
     @Bean(destroyMethod = "terminate")
     public ActorSystem<SpawnProtocol.Command> system() {
         Config config = akkaConfig();
@@ -49,7 +55,9 @@ public class ServiceConfig {
                     akka.actor.ActorSystem unTypedSystem = Adapter.toClassic(ctx.getSystem());
                     AkkaManagement.get(unTypedSystem).start();
                     ClusterBootstrap.get(unTypedSystem).start();
-                    WeatherStation.initSharding(ctx.getSystem());
+                    ActorServiceCtx actorServiceCtx = actorServiceCtx();
+                    System.out.println("actor service registry " + actorServiceCtx);
+                    WeatherStationActor.initSharding(ctx.getSystem(), actorServiceCtx);
                     return SpawnProtocol.create();
                 }), config.getString("counter.cluster.name"));
     }

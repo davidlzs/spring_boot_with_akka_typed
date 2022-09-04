@@ -11,7 +11,9 @@ import akka.cluster.sharding.typed.javadsl.ClusterSharding;
 import akka.cluster.sharding.typed.javadsl.Entity;
 import akka.cluster.sharding.typed.javadsl.EntityTypeKey;
 
+import com.dliu.springbootwithakkatyped.ActorServiceCtx;
 import com.dliu.springbootwithakkatyped.CborSerializable;
+import com.dliu.springbootwithakkatyped.model.WeatherStation;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -19,7 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * A sharded `WeatherStation` has a set of recorded datapoints
+ * A sharded `WeatherStationActor` has a set of recorded datapoints
  * For each weather station common cumulative computations can be run:
  * aggregate, averages, high/low, topK (e.g. the top N highest temperatures).
  *
@@ -28,17 +30,19 @@ import java.util.stream.Collectors;
  * For a sharded entity to have state that survives being stopped and started again it needs to be persistent,
  * for example by being an EventSourcedBehavior.
  */
-public final class WeatherStation extends AbstractBehavior<WeatherStation.Command> {
+public final class WeatherStationActor extends AbstractBehavior<WeatherStationActor.Command> {
 
     // setup for using WeatherStations through Akka Cluster Sharding
-    // these could also live elsewhere and the WeatherStation class be completely
+    // these could also live elsewhere and the WeatherStationActor class be completely
     // oblivious to being used in sharding
     public static final EntityTypeKey<Command> TypeKey =
-            EntityTypeKey.create(WeatherStation.Command.class, "WeatherStation");
+            EntityTypeKey.create(WeatherStationActor.Command.class, "WeatherStationActor");
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private Optional<WeatherStation> state;
 
-    public static void initSharding(ActorSystem<?> system) {
+    public static void initSharding(ActorSystem<?> system, ActorServiceCtx actorServiceCtx) {
         ClusterSharding.get(system).init(Entity.of(TypeKey, entityContext ->
-                WeatherStation.create(entityContext.getEntityId())
+                WeatherStationActor.create(entityContext.getEntityId(), actorServiceCtx)
         ));
     }
 
@@ -65,9 +69,9 @@ public final class WeatherStation extends AbstractBehavior<WeatherStation.Comman
         }
     }
     public static final class DataRecorded implements CborSerializable {
-        public final String wsid;
+        public final long wsid;
         @JsonCreator
-        public DataRecorded(String wsid) {
+        public DataRecorded(long wsid) {
             this.wsid = wsid;
         }
 
@@ -90,13 +94,13 @@ public final class WeatherStation extends AbstractBehavior<WeatherStation.Comman
         }
     }
     public static final class QueryResult implements CborSerializable {
-        public final String wsid;
-        public final WeatherStation.DataType dataType;
-        public final WeatherStation.Function function;
+        public final long wsid;
+        public final WeatherStationActor.DataType dataType;
+        public final WeatherStationActor.Function function;
         public final int readings;
         public final List<TimeWindow> value;
         @JsonCreator
-        public QueryResult(String wsid, WeatherStation.DataType dataType, WeatherStation.Function function, int readings, List<TimeWindow> value) {
+        public QueryResult(long wsid, DataType dataType, Function function, int readings, List<TimeWindow> value) {
             this.wsid = wsid;
             this.dataType = dataType;
             this.function = function;
@@ -166,9 +170,9 @@ public final class WeatherStation extends AbstractBehavior<WeatherStation.Comman
         }
     }
 
-    public static Behavior<Command> create(String wsid) {
+    public static Behavior<Command> create(String wsid, ActorServiceCtx actorServiceCtx) {
         return Behaviors.setup(context ->
-                                       new WeatherStation(context, wsid)
+               new WeatherStationActor(context, wsid, actorServiceCtx)
         );
     }
 
@@ -176,12 +180,15 @@ public final class WeatherStation extends AbstractBehavior<WeatherStation.Comman
         return values.stream().mapToDouble(i -> i).average().getAsDouble();
     }
 
-    private final String wsid;
+    private final long wsid;
+    private final ActorServiceCtx actorServiceCtx;
     private final List<Data> values = new ArrayList<>();
 
-    public WeatherStation(ActorContext<Command> context, String wsid) {
+    public WeatherStationActor(ActorContext<Command> context, String wsid, ActorServiceCtx actorServiceCtx) {
         super(context);
-        this.wsid = wsid;
+        this.wsid = Long.parseLong(wsid);
+        this.actorServiceCtx = actorServiceCtx;
+        this.state = actorServiceCtx.getWeatherStationService().findById(this.wsid);
     }
 
     @Override
@@ -195,6 +202,11 @@ public final class WeatherStation extends AbstractBehavior<WeatherStation.Comman
 
     private Behavior<Command> onRecord(Record record) {
         values.add(record.data);
+        if (!state.isPresent()) {
+            WeatherStation weatherStation = new WeatherStation();
+            weatherStation.setId(this.wsid);
+            state = Optional.of(actorServiceCtx.getWeatherStationService().save(weatherStation));
+        }
         System.out.println("recording " + record);
         if (getContext().getLog().isDebugEnabled()) {
             List<Double> dataForSameType = values.stream()
